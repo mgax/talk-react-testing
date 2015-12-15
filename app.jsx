@@ -25,6 +25,11 @@ class Client {
 
 class App extends React.Component {
 
+  constructor(props) {
+    super(props)
+    this.state = {todos: []}
+  }
+
   render() {
     return (
       <div id='todolist'>
@@ -37,13 +42,34 @@ class App extends React.Component {
             input.value = ''
           }}
           >add</button>
+        <ul>
+          {this.state.todos.map((todo) =>
+            <li>
+              <span className='text'>
+                {todo.text}
+              </span>
+            </li>
+          )}
+        </ul>
       </div>
     )
+  }
+
+  componentWillMount() {
+    this.update()
+  }
+
+  update() {
+    this.props.client.get('/todos')
+      .then((resp) => {
+        this.setState({todos: resp.todos})
+      })
   }
 
   add(text) {
     if(! text) return
     this.props.client.post('/todos', {text: text})
+      .then(() => { this.update() })
   }
 
 }
