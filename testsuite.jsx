@@ -51,6 +51,10 @@ class TestingContext {
     .catch(done)
   }
 
+  waitFor(selector) {
+    return wait(() => this.div.querySelector(selector))
+  }
+
 }
 
 mocha.setup('bdd')
@@ -64,12 +68,12 @@ describe('todo app', function() {
     ctx.run(done, () =>
       Promise.resolve()
       .then(() => ctx.createApp())
-      .then(() => wait(() => ctx.div.querySelector('#todolist')))
+      .then(() => ctx.waitFor('#todolist'))
       .then((todolist) => {
         todolist.querySelector('[name=text]').value = 'hello world'
         todolist.querySelector('button').click()
       })
-      .then(() => wait(() => ctx.div.querySelector('#todolist li .text')))
+      .then(() => ctx.waitFor('#todolist li .text'))
       .then((item) => {
         chai.assert.equal(item.textContent, 'hello world')
       })
