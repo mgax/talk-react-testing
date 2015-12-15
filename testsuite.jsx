@@ -31,6 +31,10 @@ class TestingContext {
     this.client = new Client()
   }
 
+  flushDb() {
+    return this.client.post('/_flush')
+  }
+
   createApp() {
     this.div = document.querySelector('#appUnderTest')
     this.app = React.render(<App client={this.client} />, this.div)
@@ -66,7 +70,7 @@ describe('todo app', function() {
   it('should add todo item', function(done) {
     let ctx = new TestingContext()
     ctx.run(done, () =>
-      Promise.resolve()
+      ctx.flushDb()
       .then(() => ctx.createApp())
       .then(() => ctx.waitFor('#todolist'))
       .then((todolist) => {

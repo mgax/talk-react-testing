@@ -30,5 +30,11 @@ app.get('/todos', function(req, res) {
   res.send({todos: todos})
 })
 
+app.post('/_flush', function(req, res) {
+  todos = []
+  console.log(todos)
+  res.send({ok: true})
+})
+
 var address = app.listen(+(process.env.PORT || 5000)).address()
 console.log('listening on', address.address, address.port)
