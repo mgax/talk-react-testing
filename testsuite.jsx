@@ -25,6 +25,34 @@ function wait(callback) {
   })
 }
 
+class TestingContext {
+
+  constructor() {
+    this.client = new Client()
+  }
+
+  createApp() {
+    this.div = document.querySelector('#appUnderTest')
+    this.app = React.render(<App client={this.client} />, this.div)
+    return this.app
+  }
+
+  destroyApp() {
+    if(! this.div) return
+    React.unmountComponentAtNode(this.div)
+    this.div = null
+  }
+
+  run(done, callback) {
+    callback().then(() => {
+      this.destroyApp()
+      done()
+    })
+    .catch(done)
+  }
+
+}
+
 mocha.setup('bdd')
 mocha.timeout(5000)
 mocha.slow(2000)
@@ -32,23 +60,20 @@ mocha.slow(2000)
 describe('todo app', function() {
 
   it('should add todo item', function(done) {
-    let div = document.querySelector('#appUnderTest')
-    let client = new Client()
-    let app = React.render(<App client={client} />, div)
-
-    wait(() => div.querySelector('#todolist'))
+    let ctx = new TestingContext()
+    ctx.run(done, () =>
+      Promise.resolve()
+      .then(() => ctx.createApp())
+      .then(() => wait(() => ctx.div.querySelector('#todolist')))
       .then((todolist) => {
         todolist.querySelector('[name=text]').value = 'hello world'
         todolist.querySelector('button').click()
       })
-      .then(() => wait(() => div.querySelector('#todolist li .text')))
+      .then(() => wait(() => ctx.div.querySelector('#todolist li .text')))
       .then((item) => {
         chai.assert.equal(item.textContent, 'hello world')
       })
-      .then(() => {
-        React.unmountComponentAtNode(div)
-        done()
-      })
+    )
   })
 
 })
