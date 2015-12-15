@@ -84,6 +84,22 @@ describe('todo app', function() {
     )
   })
 
+  it('should delete todo item', function(done) {
+    let rowId
+    let ctx = new TestingContext()
+    ctx.run(done, () =>
+      ctx.flushDb()
+      .then(ctx.client.post('/todos', {text: 'hello world'}))
+      .then((res) => { rowId = res.id })
+      .then(() => ctx.createApp())
+      .then(() => ctx.waitFor('#todolist li .delete'))
+      .then((del) => { del.click() })
+      .then(() => wait(() =>
+        ctx.div.querySelector('#todolist li') === null
+      ))
+    )
+  })
+
 })
 
 mocha.run()

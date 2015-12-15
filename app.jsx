@@ -48,6 +48,15 @@ class App extends React.Component {
               <span className='text'>
                 {todo.text}
               </span>
+              {' '}
+              <a
+                className='delete'
+                href='#'
+                onClick={(e) => {
+                  e.preventDefault()
+                  this.delete(todo.id)
+                }}
+                >x</a>
             </li>
           )}
         </ul>
@@ -69,6 +78,11 @@ class App extends React.Component {
   add(text) {
     if(! text) return
     this.props.client.post('/todos', {text: text})
+      .then(() => { this.update() })
+  }
+
+  delete(id) {
+    this.props.client.post('/todos/delete', {id: id})
       .then(() => { this.update() })
   }
 
