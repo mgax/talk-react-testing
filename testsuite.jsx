@@ -47,14 +47,6 @@ class TestingContext {
     this.div = null
   }
 
-  run(done, callback) {
-    callback().then(() => {
-      this.destroyApp()
-      done()
-    })
-    .catch(done)
-  }
-
   waitFor(selector) {
     return wait(() => this.div.querySelector(selector))
   }
@@ -67,37 +59,27 @@ mocha.slow(2000)
 
 describe('todo app', function() {
 
-  it('should add todo item', function(done) {
+  it('should add todo item', async function() {
     let ctx = new TestingContext()
-    ctx.run(done, () =>
-      ctx.flushDb()
-      .then(() => ctx.createApp())
-      .then(() => ctx.waitFor('#todolist'))
-      .then((todolist) => {
-        todolist.querySelector('[name=text]').value = 'hello world'
-        todolist.querySelector('button').click()
-      })
-      .then(() => ctx.waitFor('#todolist li .text'))
-      .then((item) => {
-        chai.assert.equal(item.textContent, 'hello world')
-      })
-    )
+    await ctx.flushDb()
+    await ctx.createApp()
+    let todolist = await ctx.waitFor('#todolist')
+    todolist.querySelector('[name=text]').value = 'hello world'
+    todolist.querySelector('button').click()
+    let item = await ctx.waitFor('#todolist li .text')
+    chai.assert.equal(item.textContent, 'hello world')
+    await ctx.destroyApp()
   })
 
-  it('should delete todo item', function(done) {
-    let rowId
+  it('should delete todo item', async function() {
     let ctx = new TestingContext()
-    ctx.run(done, () =>
-      ctx.flushDb()
-      .then(ctx.client.post('/todos', {text: 'hello world'}))
-      .then((res) => { rowId = res.id })
-      .then(() => ctx.createApp())
-      .then(() => ctx.waitFor('#todolist li .delete'))
-      .then((del) => { del.click() })
-      .then(() => wait(() =>
-        ctx.div.querySelector('#todolist li') === null
-      ))
-    )
+    await ctx.flushDb()
+    await ctx.client.post('/todos', {text: 'hello world'})
+    await ctx.createApp()
+    let del = await ctx.waitFor('#todolist li .delete')
+    await del.click()
+    await wait(() => ctx.div.querySelector('#todolist li') === null)
+    await ctx.destroyApp()
   })
 
 })
