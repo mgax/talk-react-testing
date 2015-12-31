@@ -1,28 +1,21 @@
-function wait(callback) {
-  return new Promise((resolve, reject) => {
-    let time = () => new Date().getTime()
-    let t0 = time()
-    let i = setInterval(() => {
+function time() {
+  return new Date().getTime()
+}
 
-      let rv
-      try {
-        rv = callback()
-      }
-      catch(e) {
-        reject(e)
-      }
-
-      if(rv) {
-        clearInterval(i)
-        resolve(rv)
-      }
-      else if(time() - t0 > 2000) {
-        clearInterval(i)
-        reject(new Error('timeout'))
-      }
-
-    }, 50)
+function sleep(t) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, t)
   })
+}
+
+async function wait(callback) {
+  let t0 = time()
+  while(true) {
+    if(time() - t0 > 2000) throw new Error('timeout')
+    let rv = callback()
+    if(rv) return rv
+    await sleep(50)
+  }
 }
 
 class TestingContext {
